@@ -6,7 +6,7 @@
 
 
 
-# Early Bird APC Injection · Rust · Stargate Resolver
+# Early Bird APC Injection · Stargate Resolver
 
 **Early Bird gets the worm. Before the EDR does.**
 
